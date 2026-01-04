@@ -2,14 +2,17 @@ from typing import List, Optional, Dict
 from app.models import Document
 from app.repositories import DocumentRepository
 
+
 class DocumentService:
     """Service layer for document business logic"""
+
     def __init__(self):
         self.repository = DocumentRepository()
 
     def create_document(self, title: str, content: str, source_type: str = 'manual',
                         source_url: Optional[str] = None) -> Document:
-        """CREATE a new document with validation"""
+        """Create a new document with validation"""
+
         # Validation
         if not title or len(title.strip()) == 0:
             raise ValueError("Title cannot be empty")
@@ -20,15 +23,15 @@ class DocumentService:
         if source_type not in ['manual', 'upload', 'web']:
             raise ValueError("Invalid source_type")
 
-            # Create document
-            document = Document(
-                title=title.strip(),
-                content=content.strip(),
-                source_type=source_type,
-                source_url=source_url
-            )
+        # Create document
+        document = Document(
+            title=title.strip(),
+            content=content.strip(),
+            source_type=source_type,
+            source_url=source_url
+        )
 
-            return self.repository.create(document)
+        return self.repository.create(document)
 
     def get_document(self, document_id: int) -> Optional[Document]:
         """Get document by ID"""
@@ -46,7 +49,6 @@ class DocumentService:
             return None
 
         # Update allowed fields
-
         allowed_fields = ['title', 'content', 'summary', 'source_url', 'tags']
         for field, value in kwargs.items():
             if field in allowed_fields and value is not None:
@@ -64,3 +66,9 @@ class DocumentService:
         self.repository.delete(document)
         return True
 
+    def search_documents(self, query: str) -> List[Document]:
+        """Search documents by title"""
+        if not query or len(query.strip()) == 0:
+            return []
+
+        return self.repository.search_by_title(query.strip())

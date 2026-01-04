@@ -12,7 +12,7 @@ class Document(db.Model):
     #Basic info
     title = db.Column(db.String(255), nullable=False)
     content = db.Column(db.Text, nullable=False)
-    summary = db.Column(db.Text, nullable=False)
+    summary = db.Column(db.Text, nullable=True)
 
     # Metadata
     source_type = db.Column(db.String(50), nullable=False)  # 'upload', 'web', 'manual'

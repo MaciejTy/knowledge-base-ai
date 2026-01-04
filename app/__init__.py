@@ -2,24 +2,28 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
-#Initialize extensions
-
+# Initialize extensions globally
 db = SQLAlchemy()
 migrate = Migrate()
 
+
 def create_app(config_name='development'):
-    #Application factory pattern
+    """
+    Application factory pattern
+    Creates and configures the Flask application
+    """
     app = Flask(__name__)
 
-    #Load config
+    # Load configuration
     from app.config import config
     app.config.from_object(config[config_name])
 
-    #Initialize extensions
+    # Initialize extensions with app
     db.init_app(app)
     migrate.init_app(app, db)
 
-    # #Register blueprints (API routes)
-    # from app.api.routes import documents
-    # app.register_blueprint(documents.bp)
+    # Register blueprints (route modules)
+    from app.api.routes import documents
+    app.register_blueprint(documents.bp)
+
     return app
