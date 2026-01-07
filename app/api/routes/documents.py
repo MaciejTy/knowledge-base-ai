@@ -42,7 +42,6 @@ def create_document():
     except ValueError as e:
         # Service validation error (e.g., empty title)
         return jsonify({'error': str(e)}), 400
-
     except Exception as e:
         # Unexpected error
         return jsonify({'error': 'Internal server error', 'details': str(e)}), 500
@@ -56,12 +55,15 @@ def get_document(document_id):
     GET /api/documents/1
     Returns: 200 OK with document JSON or 404 Not Found
     """
-    document = document_service.get_document(document_id)
+    try:
+        document = document_service.get_document(document_id)
 
-    if not document:
-        return jsonify({'error': 'Document not found'}), 404
+        if not document:
+            return jsonify({'error': 'Document not found'}), 404
 
-    return jsonify(document.to_dict()), 200
+        return jsonify(document.to_dict()), 200
+    except Exception as e:
+        return jsonify({'error': 'Internal server error', 'details': str(e)}), 500
 
 
 @bp.route('', methods=['GET'])
@@ -72,14 +74,17 @@ def list_documents():
     GET /api/documents?limit=10&offset=0
     Returns: 200 OK with array of documents
     """
-    # Extract query parameters from URL
-    limit = request.args.get('limit', 100, type=int)
-    offset = request.args.get('offset', 0, type=int)
+    try:
+        # Extract query parameters from URL
+        limit = request.args.get('limit', 100, type=int)
+        offset = request.args.get('offset', 0, type=int)
 
-    documents = document_service.list_documents(limit=limit, offset=offset)
+        documents = document_service.list_documents(limit=limit, offset=offset)
 
-    # Convert each document to dictionary
-    return jsonify([doc.to_dict() for doc in documents]), 200
+        # Convert each document to dictionary
+        return jsonify([doc.to_dict() for doc in documents]), 200
+    except Exception as e:
+        return jsonify({'error': 'Internal server error', 'details': str(e)}), 500
 
 
 @bp.route('/<int:document_id>', methods=['PUT'])
@@ -104,7 +109,6 @@ def update_document(document_id):
             return jsonify({'error': 'Document not found'}), 404
 
         return jsonify(document.to_dict()), 200
-
     except Exception as e:
         return jsonify({'error': 'Internal server error', 'details': str(e)}), 500
 
@@ -117,12 +121,15 @@ def delete_document(document_id):
     DELETE /api/documents/1
     Returns: 200 OK with success message or 404 Not Found
     """
-    success = document_service.delete_document(document_id)
+    try:
+        success = document_service.delete_document(document_id)
 
-    if not success:
-        return jsonify({'error': 'Document not found'}), 404
+        if not success:
+            return jsonify({'error': 'Document not found'}), 404
 
-    return jsonify({'message': 'Document deleted successfully'}), 200
+        return jsonify({'message': 'Document deleted successfully'}), 200
+    except Exception as e:
+        return jsonify({'error': 'Internal server error', 'details': str(e)}), 500
 
 
 @bp.route('/search', methods=['GET'])
@@ -133,11 +140,33 @@ def search_documents():
     GET /api/documents/search?q=python
     Returns: 200 OK with array of matching documents
     """
-    query = request.args.get('q', '')
+    try:
+        query = request.args.get('q', '')
 
-    if not query:
-        return jsonify({'error': 'Query parameter q is required'}), 400
+        if not query:
+            return jsonify({'error': 'Query parameter q is required'}), 400
 
-    documents = document_service.search_documents(query)
+        documents = document_service.search_documents(query)
 
-    return jsonify([doc.to_dict() for doc in documents]), 200
+        return jsonify([doc.to_dict() for doc in documents]), 200
+    except Exception as e:
+        return jsonify({'error': 'Internal server error', 'details': str(e)}), 500
+
+
+@bp.route('/<int:document_id>/regenerate-ai', methods=['POST'])
+def regenerate_ai_content(document_id):
+    """
+    Regenerate AI tags and summary for existing document
+
+    POST /api/documents/1/regenerate-ai
+    Returns: 200 OK with updated document or 404 Not Found
+    """
+    try:
+        document = document_service.regenerate_ai_content(document_id)
+
+        if not document:
+            return jsonify({'error': 'Document not found'}), 404
+
+        return jsonify(document.to_dict()), 200
+    except Exception as e:
+        return jsonify({'error': 'Internal server error', 'details': str(e)}), 500

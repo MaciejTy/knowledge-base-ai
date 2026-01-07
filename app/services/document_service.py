@@ -1,6 +1,7 @@
 from typing import List, Optional, Dict
 from app.models import Document
 from app.repositories import DocumentRepository
+from app.services.ai_service import AIService
 
 
 class DocumentService:
@@ -8,10 +9,20 @@ class DocumentService:
 
     def __init__(self):
         self.repository = DocumentRepository()
+        self.ai_service = AIService()
 
     def create_document(self, title: str, content: str, source_type: str = 'manual',
-                        source_url: Optional[str] = None) -> Document:
-        """Create a new document with validation"""
+                        source_url: Optional[str] = None, use_ai: bool = True) -> Document:
+        """
+        Create a new document with validation
+
+        Args:
+            title: Document title
+            content: Document content
+            source_type: Source type (manual, upload, web)
+            source_url: Optional source URL
+            use_ai: Whether to use AI for tags/summary generation (default: True)
+        """
 
         # Validation
         if not title or len(title.strip()) == 0:
@@ -30,6 +41,21 @@ class DocumentService:
             source_type=source_type,
             source_url=source_url
         )
+
+        # Generate AI tags and summary if enabled
+        if use_ai:
+            try:
+                ai_result = self.ai_service.generate_tags_and_summary(
+                    title=document.title,
+                    content=document.content
+                )
+                document.tags = ai_result['tags']
+                document.summary = ai_result['summary']
+            except Exception as e:
+                print(f"Warning: AI generation failed: {e}")
+                # Continue without AI-generated content
+                document.tags = []
+                document.summary = None
 
         return self.repository.create(document)
 
@@ -72,3 +98,23 @@ class DocumentService:
             return []
 
         return self.repository.search_by_title(query.strip())
+
+    def regenerate_ai_content(self, document_id: int) -> Optional[Document]:
+        """Regenerate AI tags and summary for existing document"""
+        document = self.repository.get_by_id(document_id)
+
+        if not document:
+            return None
+
+        try:
+            ai_result = self.ai_service.generate_tags_and_summary(
+                title=document.title,
+                content=document.content
+            )
+            document.tags = ai_result['tags']
+            document.summary = ai_result['summary']
+
+            return self.repository.update(document)
+        except Exception as e:
+            print(f"AI regeneration failed: {e}")
+            return document
