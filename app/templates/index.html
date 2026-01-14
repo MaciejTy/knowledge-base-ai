@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Base AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 min-h-screen text-white">
+
+    <!-- Header -->
+    <header class="bg-black/30 backdrop-blur-md border-b border-purple-500/20 sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-brain text-3xl text-purple-400"></i>
+                    <h1 class="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                        Knowledge Base AI
+                    </h1>
+                </div>
+                <button id="newDocBtn" class="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 px-6 py-2 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-lg">
+                    <i class="fas fa-plus mr-2"></i>New Document
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+
+        <!-- Search Bar -->
+        <div class="mb-8">
+            <div class="relative max-w-2xl mx-auto">
+                <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="Search documents..."
+                    class="w-full px-6 py-4 bg-white/10 backdrop-blur-md border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                >
+                <i class="fas fa-search absolute right-6 top-1/2 transform -translate-y-1/2 text-purple-400"></i>
+            </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div id="loading" class="text-center py-12 hidden">
+            <i class="fas fa-spinner fa-spin text-4xl text-purple-400"></i>
+            <p class="mt-4 text-gray-300">Loading documents...</p>
+        </div>
+
+        <!-- Documents Grid -->
+        <div id="documentsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Documents will be inserted here by JavaScript -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="text-center py-20 hidden">
+            <i class="fas fa-folder-open text-6xl text-purple-400/50 mb-4"></i>
+            <h3 class="text-2xl font-semibold text-gray-300 mb-2">No documents yet</h3>
+            <p class="text-gray-400 mb-6">Create your first document to get started!</p>
+            <button onclick="showNewDocumentModal()" class="bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-3 rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-all">
+                <i class="fas fa-plus mr-2"></i>Create Document
+            </button>
+        </div>
+
+    </main>
+
+    <!-- New Document Modal -->
+    <div id="newDocModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-gray-900 border border-purple-500/30 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div class="p-6 border-b border-purple-500/20">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-2xl font-bold text-purple-400">
+                        <i class="fas fa-file-plus mr-2"></i>New Document
+                    </h2>
+                    <button onclick="closeNewDocumentModal()" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <form id="newDocForm" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-purple-300 mb-2">Title</label>
+                    <input
+                        type="text"
+                        id="docTitle"
+                        required
+                        class="w-full px-4 py-3 bg-white/5 border border-purple-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        placeholder="Enter document title..."
+                    >
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-purple-300 mb-2">Content</label>
+                    <textarea
+                        id="docContent"
+                        required
+                        rows="8"
+                        class="w-full px-4 py-3 bg-white/5 border border-purple-500/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+                        placeholder="Enter document content... AI will automatically generate tags and summary!"
+                    ></textarea>
+                </div>
+
+                <div class="flex items-center space-x-2 text-sm text-gray-400">
+                    <i class="fas fa-robot text-purple-400"></i>
+                    <span>AI will automatically generate tags and summary</span>
+                </div>
+
+                <div class="flex space-x-3 pt-4">
+                    <button
+                        type="submit"
+                        class="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 px-6 py-3 rounded-lg font-semibold transition-all shadow-lg"
+                    >
+                        <i class="fas fa-magic mr-2"></i>Create with AI
+                    </button>
+                    <button
+                        type="button"
+                        onclick="closeNewDocumentModal()"
+                        class="px-6 py-3 bg-white/10 hover:bg-white/20 rounded-lg font-semibold transition-all"
+                    >
+                        Cancel
+                    </button>
+                </div>
+            </form>
+
+            <!-- Creating Indicator -->
+            <div id="creatingIndicator" class="hidden p-6 text-center border-t border-purple-500/20">
+                <i class="fas fa-spinner fa-spin text-3xl text-purple-400 mb-2"></i>
+                <p class="text-purple-300 font-semibold">Creating document with AI...</p>
+                <p class="text-sm text-gray-400 mt-1">This may take a few seconds</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Document Detail Modal -->
+    <div id="detailModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-gray-900 border border-purple-500/30 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div class="p-6 border-b border-purple-500/20">
+                <div class="flex items-center justify-between">
+                    <h2 id="detailTitle" class="text-2xl font-bold text-purple-400"></h2>
+                    <button onclick="closeDetailModal()" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="p-6 space-y-6">
+                <!-- Tags -->
+                <div>
+                    <h3 class="text-sm font-semibold text-purple-300 mb-2">Tags</h3>
+                    <div id="detailTags" class="flex flex-wrap gap-2">
+                        <!-- Tags will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Summary -->
+                <div id="detailSummarySection">
+                    <h3 class="text-sm font-semibold text-purple-300 mb-2">AI Summary</h3>
+                    <p id="detailSummary" class="text-gray-300 bg-white/5 p-4 rounded-lg border border-purple-500/20"></p>
+                </div>
+
+                <!-- Content -->
+                <div>
+                    <h3 class="text-sm font-semibold text-purple-300 mb-2">Full Content</h3>
+                    <div id="detailContent" class="text-gray-300 bg-white/5 p-4 rounded-lg border border-purple-500/20 whitespace-pre-wrap"></div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex space-x-3 pt-4">
+                    <button
+                        id="regenerateBtn"
+                        onclick="regenerateAI()"
+                        class="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 px-6 py-3 rounded-lg font-semibold transition-all shadow-lg"
+                    >
+                        <i class="fas fa-sync-alt mr-2"></i>Regenerate AI
+                    </button>
+                    <button
+                        id="deleteBtn"
+                        onclick="deleteDocument()"
+                        class="px-6 py-3 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg font-semibold transition-all border border-red-500/30"
+                    >
+                        <i class="fas fa-trash mr-2"></i>Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-4 rounded-lg shadow-2xl hidden transform transition-all">
+        <div class="flex items-center space-x-3">
+            <i id="toastIcon" class="fas fa-check-circle text-xl"></i>
+            <span id="toastMessage" class="font-semibold"></span>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
